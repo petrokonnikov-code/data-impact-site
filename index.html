@@ -145,6 +145,30 @@
         #progress-fill {
             @apply bg-[var(--gradient-from)] h-2 rounded-full transition-all duration-300;
         }
+        .lang-active {
+            @apply text-[var(--gradient-from)] dark:text-[var(--gradient-from)] font-bold;
+        }
+        .lang-inactive {
+            @apply text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300 dark:hover:text-[var(--gradient-from)];
+        }
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+        .file-button {
+            @apply inline-flex justify-center rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--gradient-from)] focus:ring-offset-2;
+        }
+        .file-button.has-file {
+            @apply bg-[var(--gradient-from)] text-white border-[var(--gradient-from)];
+        }
+        .file-name {
+            @apply text-sm text-gray-500 dark:text-gray-400 mt-1 block;
+        }
     </style>
 <script id="tailwind-config">
         tailwind.config = {
@@ -203,21 +227,46 @@
 
             // Language toggle with localStorage, auto-detect, and query param
             const langToggle = (lang) => {
+                console.log('Toggling language to:', lang); // Debug log (remove in production)
                 document.documentElement.lang = lang;
                 document.body.setAttribute('data-lang', lang);
                 localStorage.setItem('lang', lang);
                 document.querySelectorAll('.lang-link').forEach(link => {
-                    link.classList.toggle('font-bold', link.getAttribute('data-lang') === lang);
+                    if (link.getAttribute('data-lang') === lang) {
+                        link.classList.remove('lang-inactive');
+                        link.classList.add('lang-active');
+                    } else {
+                        link.classList.remove('lang-active');
+                        link.classList.add('lang-inactive');
+                    }
                 });
+                // Update select options text
+                updateSelectOptions();
             };
+
+            // Update select options based on current lang
+            function updateSelectOptions() {
+                const currentLang = document.body.getAttribute('data-lang');
+                const options = document.querySelectorAll('#messenger option');
+                options.forEach(option => {
+                    if (option.hasAttribute('data-uk') && option.hasAttribute('data-en')) {
+                        option.textContent = option.getAttribute(`data-${currentLang === 'ua' ? 'uk' : 'en'}`);
+                    }
+                });
+            }
 
             const urlParams = new URLSearchParams(window.location.search);
             const urlLang = urlParams.get('lang');
-            const savedLang = urlLang || localStorage.getItem('lang') || (navigator.language.startsWith('uk') ? 'ua' : 'en');
+            const savedLang = urlLang || localStorage.getItem('lang') || (navigator.language.startsWith('uk') ? 'ua' : 'ua'); // Default to 'ua' always
             langToggle(savedLang);
 
-            document.querySelector('[data-lang="ua"]').addEventListener('click', (e) => { e.preventDefault(); langToggle('ua'); });
-            document.querySelector('[data-lang="en"]').addEventListener('click', (e) => { e.preventDefault(); langToggle('en'); });
+            // Universal click listener for lang links (fixes mouse/touch)
+            document.querySelectorAll('.lang-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    langToggle(link.getAttribute('data-lang'));
+                });
+            });
 
             // Keyboard support for lang toggle
             document.querySelectorAll('.lang-link').forEach(link => {
@@ -229,7 +278,7 @@
                 });
             });
 
-            // Accordion keyboard support
+            // Accordion keyboard support (if needed)
             const summary = document.querySelector('details summary');
             if (summary) {
                 summary.addEventListener('keydown', (e) => {
@@ -246,13 +295,21 @@
             const prevBtn = document.getElementById('prev-btn');
             const progressFill = document.getElementById('progress-fill');
             let currentStep = 0;
+            const formspreeEndpoint = 'https://formspree.io/f/your-id'; // Replace with actual ID
 
             function showStep(step) {
                 steps.forEach(s => s.classList.remove('active'));
                 steps[step].classList.add('active');
                 prevBtn.classList.toggle('hidden', step === 0);
-                nextBtn.classList.toggle('hidden', step === steps.length - 1);
-                nextBtn.innerHTML = step === steps.length - 1 ? '<span data-uk>Відправити</span><span data-en>Send</span>' : '<span data-uk>Далі</span><span data-en>Next</span>';
+                if (step === steps.length - 1) {
+                    nextBtn.classList.remove('hidden');
+                    nextBtn.innerHTML = '<span data-uk>Відправити</span><span data-en>Send</span>';
+                    nextBtn.type = 'submit'; // Make it submit on last step
+                } else {
+                    nextBtn.classList.remove('hidden');
+                    nextBtn.innerHTML = '<span data-uk>Далі</span><span data-en>Next</span>';
+                    nextBtn.type = 'button';
+                }
                 progressFill.style.width = ((step + 1) / steps.length * 100) + '%';
             }
 
@@ -275,17 +332,149 @@
                 return valid;
             }
 
-            nextBtn.addEventListener('click', () => {
+            // Partial submit on Next (step 0)
+            async function partialSubmit() {
+                const formData = new FormData();
+                formData.append('fullName', document.getElementById('fullName').value);
+                formData.append('phone', document.getElementById('phone').value);
+                formData.append('_partial', 'step1'); // Flag for partial
+
+                try {
+                    const response = await fetch(formspreeEndpoint, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    if (response.ok) {
+                        console.log('Partial submit successful');
+                        gtag('event', 'partial_submit', { 'event_category': 'engagement' });
+                    } else {
+                        console.error('Partial submit failed');
+                    }
+                } catch (error) {
+                    console.error('Error submitting partial form:', error);
+                }
+            }
+
+            // Full submit on last step
+            async function fullSubmit(event) {
+                event.preventDefault();
+
+                let isValid = true;
+
+                // Validate all steps
+                for (let i = 0; i < steps.length; i++) {
+                    if (!validateStep(i)) isValid = false;
+                }
+
+                // Additional validations (phone, username, file)
+                const phoneInput = document.getElementById('phone');
+                const usernameInput = document.getElementById('username');
+                const messengerSelect = document.getElementById('messenger');
+                const resumeInput = document.getElementById('resume');
+                const phoneRegex = /^((\+?380|0)[\s-]?[0-9]{9})$/;
+
+                // Phone
+                const phoneError = document.getElementById('phone-error');
+                if (!phoneRegex.test(phoneInput.value)) {
+                    phoneError.classList.add('show');
+                    phoneInput.setAttribute('aria-invalid', 'true');
+                    phoneInput.classList.add('border-red-500');
+                    isValid = false;
+                } else {
+                    phoneError.classList.remove('show');
+                    phoneInput.setAttribute('aria-invalid', 'false');
+                    phoneInput.classList.remove('border-red-500');
+                }
+
+                // Username if messenger selected
+                const usernameError = document.getElementById('username-error');
+                if (messengerSelect.value && !usernameInput.value.trim()) {
+                    usernameError.classList.add('show');
+                    usernameInput.setAttribute('aria-invalid', 'true');
+                    usernameInput.classList.add('border-red-500');
+                    isValid = false;
+                } else {
+                    if (usernameError) usernameError.classList.remove('show');
+                    usernameInput.setAttribute('aria-invalid', 'false');
+                    usernameInput.classList.remove('border-red-500');
+                }
+
+                // Resume file size
+                const resumeError = document.getElementById('resume-error');
+                const resumeFile = resumeInput.files[0];
+                if (resumeFile && resumeFile.size > 5 * 1024 * 1024) {
+                    if (resumeError) resumeError.classList.add('show');
+                    resumeInput.setAttribute('aria-invalid', 'true');
+                    resumeInput.classList.add('border-red-500');
+                    isValid = false;
+                } else {
+                    if (resumeError) resumeError.classList.remove('show');
+                    resumeInput.setAttribute('aria-invalid', 'false');
+                    resumeInput.classList.remove('border-red-500');
+                }
+
+                if (isValid) {
+                    // Full form data (including draft)
+                    const formData = new FormData(document.querySelector('form'));
+                    formData.append('_full', 'complete'); // Flag for full
+
+                    try {
+                        const response = await fetch(formspreeEndpoint, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+                        if (response.ok) {
+                            // GTM event
+                            gtag('event', 'form_submit', { 'event_category': 'engagement' });
+                            // Show success state
+                            document.querySelector('form').classList.add('hidden');
+                            const successMessage = document.getElementById('success-message');
+                            successMessage.classList.add('show');
+                            // Longer timeout
+                            setTimeout(() => {
+                                document.querySelector('form').classList.remove('hidden');
+                                successMessage.classList.remove('show');
+                                document.querySelector('form').reset();
+                                localStorage.removeItem('formDraft');
+                                currentStep = 0;
+                                showStep(0);
+                                progressFill.style.width = '50%';
+                            }, 5000);
+                        } else {
+                            console.error('Full submit failed');
+                        }
+                    } catch (error) {
+                        console.error('Error submitting full form:', error);
+                    }
+                } else {
+                    // Focus on first error
+                    const firstErrorField = document.querySelector('form [aria-invalid="true"]');
+                    if (firstErrorField) firstErrorField.focus();
+                }
+            }
+
+            nextBtn.addEventListener('click', async () => {
                 if (validateStep(currentStep)) {
-                    if (currentStep < steps.length - 1) {
+                    if (currentStep === 0) {
+                        await partialSubmit(); // Partial send on first Next
                         currentStep++;
                         showStep(currentStep);
-                    } else {
-                        // Submit logic here
-                        form.dispatchEvent(new Event('submit'));
+                    } else if (currentStep < steps.length - 1) {
+                        currentStep++;
+                        showStep(currentStep);
                     }
                 }
             });
+
+            // Use fullSubmit for submit (last step)
+            const form = document.querySelector('form');
+            form.addEventListener('submit', fullSubmit);
 
             prevBtn.addEventListener('click', () => {
                 if (currentStep > 0) {
@@ -308,7 +497,6 @@
             });
 
             // Form validation with real-time and inline errors
-            const form = document.querySelector('form');
             const phoneInput = document.getElementById('phone');
             const usernameInput = document.getElementById('username');
             const fullNameInput = document.getElementById('fullName');
@@ -318,7 +506,17 @@
 
             const phoneRegex = /^((\+?380|0)[\s-]?[0-9]{9})$/;
 
-            // Real-time validation for phone
+            // Real-time validation for phone (with disabled toggle for nextBtn)
+            function updateNextBtnState() {
+                const isFullNameValid = fullNameInput.value.trim();
+                const isPhoneValid = phoneRegex.test(phoneInput.value);
+                nextBtn.disabled = !(isFullNameValid && isPhoneValid);
+                nextBtn.classList.toggle('opacity-50', nextBtn.disabled);
+                nextBtn.classList.toggle('cursor-not-allowed', nextBtn.disabled);
+            }
+
+            phoneInput.addEventListener('input', updateNextBtnState);
+            fullNameInput.addEventListener('input', updateNextBtnState);
             phoneInput.addEventListener('blur', () => {
                 const phoneError = document.getElementById('phone-error');
                 if (!phoneRegex.test(phoneInput.value)) {
@@ -330,6 +528,7 @@
                     phoneInput.setAttribute('aria-invalid', 'false');
                     phoneInput.classList.remove('border-red-500');
                 }
+                updateNextBtnState();
             });
 
             // Real-time for username (if messenger selected)
@@ -363,82 +562,41 @@
                         // Skip files for draft
                     } else {
                         el.value = draft[key];
+                        // Trigger validation after load
+                        if (key === 'fullName' || key === 'phone') {
+                            updateNextBtnState();
+                        }
                     }
                 }
             });
 
-            form.addEventListener('submit', (e) => {
-                e.preventDefault(); // Prevent default for custom validation
+            // Initial state for nextBtn
+            updateNextBtnState();
 
-                let isValid = true;
+            // Custom file input styling
+            const resumeLabel = document.querySelector('label[for="resume"]');
+            const resumeFileInput = document.getElementById('resume');
+            const fileButton = document.createElement('button');
+            fileButton.type = 'button';
+            fileButton.className = 'file-button';
+            fileButton.innerHTML = '<span data-uk>Вибрати файл</span><span data-en>Choose File</span>';
+            const fileNameSpan = document.createElement('span');
+            fileNameSpan.className = 'file-name';
+            fileNameSpan.innerHTML = '<span data-uk>Ніякий файл не вибрано</span><span data-en>No file chosen</span>';
+            resumeLabel.appendChild(fileButton);
+            resumeLabel.appendChild(fileNameSpan);
 
-                // Validate all steps
-                for (let i = 0; i < steps.length; i++) {
-                    if (!validateStep(i)) isValid = false;
-                }
-
-                // Phone specific
-                const phoneError = document.getElementById('phone-error');
-                if (!phoneRegex.test(phoneInput.value)) {
-                    phoneError.classList.add('show');
-                    phoneInput.setAttribute('aria-invalid', 'true');
-                    phoneInput.classList.add('border-red-500');
-                    isValid = false;
+            fileButton.addEventListener('click', () => resumeFileInput.click());
+            resumeFileInput.addEventListener('change', () => {
+                if (resumeFileInput.files.length > 0) {
+                    const fileName = resumeFileInput.files[0].name;
+                    fileNameSpan.textContent = fileName;
+                    fileButton.classList.add('has-file');
+                    fileButton.innerHTML = '<span data-uk>Файл вибрано</span><span data-en>File Selected</span>';
                 } else {
-                    phoneError.classList.remove('show');
-                    phoneInput.setAttribute('aria-invalid', 'false');
-                    phoneInput.classList.remove('border-red-500');
-                }
-
-                // Messenger username validation
-                if (messengerSelect.value && !usernameInput.value.trim()) {
-                    const usernameError = document.getElementById('username-error');
-                    usernameError.classList.add('show');
-                    usernameInput.setAttribute('aria-invalid', 'true');
-                    usernameInput.classList.add('border-red-500');
-                    isValid = false;
-                } else {
-                    const usernameError = document.getElementById('username-error');
-                    if (usernameError) usernameError.classList.remove('show');
-                    usernameInput.setAttribute('aria-invalid', 'false');
-                    usernameInput.classList.remove('border-red-500');
-                }
-
-                // File size validation
-                const resumeFile = resumeInput.files[0];
-                const resumeError = document.getElementById('resume-error');
-                if (resumeFile && resumeFile.size > 5 * 1024 * 1024) {
-                    if (resumeError) resumeError.classList.add('show');
-                    resumeInput.setAttribute('aria-invalid', 'true');
-                    resumeInput.classList.add('border-red-500');
-                    isValid = false;
-                } else {
-                    if (resumeError) resumeError.classList.remove('show');
-                    resumeInput.setAttribute('aria-invalid', 'false');
-                    resumeInput.classList.remove('border-red-500');
-                }
-
-                if (isValid) {
-                    // GTM event
-                    gtag('event', 'form_submit', { 'event_category': 'engagement' });
-                    // Show success state
-                    form.classList.add('hidden');
-                    const successMessage = document.getElementById('success-message');
-                    successMessage.classList.add('show');
-                    // Longer timeout
-                    setTimeout(() => {
-                        form.classList.remove('hidden');
-                        successMessage.classList.remove('show');
-                        form.reset();
-                        localStorage.removeItem('formDraft');
-                        currentStep = 0;
-                        showStep(0);
-                        progressFill.style.width = '50%';
-                    }, 5000);
-                } else {
-                    // Focus on first error
-                    const firstErrorField = form.querySelector('[aria-invalid="true"]');
-                    if (firstErrorField) firstErrorField.focus();
+                    fileNameSpan.innerHTML = '<span data-uk>Ніякий файл не вибрано</span><span data-en>No file chosen</span>';
+                    fileButton.classList.remove('has-file');
+                    fileButton.innerHTML = '<span data-uk>Вибрати файл</span><span data-en>Choose File</span>';
                 }
             });
 
@@ -470,9 +628,9 @@
 </div>
 <div class="flex items-center gap-4">
 <div class="flex items-center gap-2 text-sm font-medium">
-<a data-lang="ua" role="button" tabindex="0" class="lang-link text-[var(--gradient-from)] dark:text-[var(--gradient-from)] font-bold" href="#" aria-label="Українська">UA</a>
+<a data-lang="ua" role="button" tabindex="0" class="lang-link lang-active" href="#" aria-label="Українська">UA</a>
 <span class="text-gray-300 dark:text-gray-600">|</span>
-<a data-lang="en" role="button" tabindex="0" class="lang-link text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300 dark:hover:text-[var(--gradient-from)]" href="#" aria-label="English">EN</a>
+<a data-lang="en" role="button" tabindex="0" class="lang-link lang-inactive" href="#" aria-label="English">EN</a>
 </div>
 <button onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})" class="rounded-lg bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg">
     <span data-uk>Залишити заявку</span><span data-en>Apply Now</span>
@@ -616,14 +774,14 @@
 </div>
 <div>
 <label for="resume" class="block text-sm font-medium text-gray-700 dark:text-gray-300"><span data-uk>Резюме (PDF/DOC)</span><span data-en>Resume (PDF/DOC)</span></label>
-<input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" aria-describedby="resume-help resume-error" class="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none">
+<input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" aria-describedby="resume-help resume-error" class="sr-only">
 <small id="resume-help" class="text-gray-500 text-xs mt-1 block"><span data-uk>Макс. 5MB, PDF/DOC.</span><span data-en>Max 5MB, PDF/DOC.</span></small>
 <div id="resume-error" class="error-message"><span data-uk>Файл завеликий (макс. 5MB).</span><span data-en>File too large (max 5MB).</span></div>
 </div>
 </div>
 <div class="flex justify-center space-x-2">
 <button type="button" id="prev-btn" class="hidden rounded-lg bg-gray-300 px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-600 dark:text-gray-300">Назад / Back</button>
-<button type="button" id="next-btn" class="rounded-lg bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] px-4 py-2 text-sm font-bold text-white shadow-md">Далі / Next</button>
+<button type="button" id="next-btn" disabled class="rounded-lg bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] px-4 py-2 text-sm font-bold text-white shadow-md opacity-50 cursor-not-allowed">Далі / Next</button>
 </div>
 </form>
 <div id="success-message" class="success-message" role="alert">
