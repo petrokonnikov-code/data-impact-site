@@ -48,10 +48,10 @@
   "description": "Join Data Impact Solutions for data analysis roles with growth and compensation.",
   "hiringOrganization": {"@type": "Organization", "name": "Data Impact Solutions"},
   "jobLocation": {"@type": "Place", "address": {"@type": "PostalAddress", "addressCountry": "UA"}},
-  "datePosted": "2025-09-26"
+  "datePosted": "2025-09-29"
 }
 </script>
-<!-- Google Tag Manager (placeholder; replace GA-ID) -->
+<!-- Google Tag Manager (replace GA-ID with your actual ID) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=GA-ID"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -80,6 +80,7 @@
             background-color: rgba(255, 255, 255, 0.8);
             border-radius: 50%;
             animation: pulse 2s infinite ease-in-out;
+            will-change: transform;
         }
         @keyframes pulse {
             0% { transform: scale(0.9); opacity: 0.8; }
@@ -197,72 +198,42 @@
         // Constants and configuration
         const CONFIG = {
             PHONE_REGEX: /^((\+?380|0)[\s-]?[0-9]{9})$/,
-            MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
-            FORMSPREE_ENDPOINT: 'https://formspree.io/f/xpwyplrq',
-            DATA_POINTS_COUNT: 50,
+            FORMSPREE_ENDPOINT: 'https://formspree.io/f/xpwyplrq', // Replace with your actual Formspree hash
+            DATA_POINTS_COUNT: 30, // Reduced for performance
             SUCCESS_TIMEOUT: 5000
         };
-
         document.addEventListener('DOMContentLoaded', () => {
             // Initialize components
             initDataVisualization();
             initLanguageToggle();
             initMultiStepForm();
-            initFileUpload();
             initAccessibilityFeatures();
         });
-
         // Data visualization initialization
         function initDataVisualization() {
             const visualizationContainer = document.querySelector('.data-visualization');
             if (!visualizationContainer) return;
-
             const containerWidth = visualizationContainer.clientWidth;
             const containerHeight = visualizationContainer.clientHeight;
-
             for (let i = 0; i < CONFIG.DATA_POINTS_COUNT; i++) {
                 const dataPoint = document.createElement('div');
                 dataPoint.classList.add('data-point');
-
                 const size = Math.random() * 15 + 5;
                 dataPoint.style.width = `${size}px`;
                 dataPoint.style.height = `${size}px`;
-
                 const xPos = Math.random() * (containerWidth - size);
                 const yPos = Math.random() * (containerHeight - size);
                 dataPoint.style.left = `${xPos}px`;
                 dataPoint.style.top = `${yPos}px`;
-
                 const animationDelay = Math.random() * 3;
                 dataPoint.style.animationDelay = `-${animationDelay}s`;
-
                 const opacity = Math.random() * 0.4 + 0.4;
                 dataPoint.style.opacity = opacity;
-
                 visualizationContainer.appendChild(dataPoint);
             }
         }
-
         // Language toggle functionality
         function initLanguageToggle() {
-            const langToggle = (lang) => {
-                document.documentElement.lang = lang;
-                document.body.setAttribute('data-lang', lang);
-                localStorage.setItem('lang', lang);
-                
-                document.querySelectorAll('.lang-link').forEach(link => {
-                    if (link.getAttribute('data-lang') === lang) {
-                        link.classList.remove('lang-inactive');
-                        link.classList.add('lang-active');
-                    } else {
-                        link.classList.remove('lang-active');
-                        link.classList.add('lang-inactive');
-                    }
-                });
-                
-                updateSelectOptions();
-            };
-
             function updateSelectOptions() {
                 const currentLang = document.body.getAttribute('data-lang');
                 const options = document.querySelectorAll('#messenger option');
@@ -274,13 +245,30 @@
                     }
                 });
             }
-
+            const langToggle = (lang) => {
+                document.documentElement.lang = lang;
+                document.body.setAttribute('data-lang', lang);
+                localStorage.setItem('lang', lang);
+               
+                document.querySelectorAll('.lang-link').forEach(link => {
+                    if (link.getAttribute('data-lang') === lang) {
+                        link.setAttribute('aria-pressed', 'true');
+                        link.classList.remove('lang-inactive');
+                        link.classList.add('lang-active');
+                    } else {
+                        link.setAttribute('aria-pressed', 'false');
+                        link.classList.remove('lang-active');
+                        link.classList.add('lang-inactive');
+                    }
+                });
+               
+                updateSelectOptions();
+            };
             // Initialize language
             const urlParams = new URLSearchParams(window.location.search);
             const urlLang = urlParams.get('lang');
             const savedLang = urlLang || localStorage.getItem('lang') || 'ua';
             langToggle(savedLang);
-
             // Event listeners
             document.querySelectorAll('.lang-link').forEach(link => {
                 ['click', 'keydown'].forEach(eventType => {
@@ -292,21 +280,27 @@
                 });
             });
         }
-
         // Multi-step form functionality
         function initMultiStepForm() {
+            // Generate or retrieve submission ID
+            let submissionId = localStorage.getItem('submissionId');
+            if (!submissionId) {
+                submissionId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2);
+                localStorage.setItem('submissionId', submissionId);
+            }
+
             const steps = document.querySelectorAll('.step');
             const nextBtn = document.getElementById('next-btn');
             const prevBtn = document.getElementById('prev-btn');
+            const progressBar = document.getElementById('progress-bar');
             const progressFill = document.getElementById('progress-fill');
             const form = document.querySelector('form');
             let currentStep = 0;
-
             function showStep(step) {
                 steps.forEach(s => s.classList.remove('active'));
                 steps[step].classList.add('active');
                 prevBtn.classList.toggle('hidden', step === 0);
-                
+               
                 if (step === steps.length - 1) {
                     nextBtn.innerHTML = '<span data-uk>Відправити</span><span data-en>Send</span>';
                     nextBtn.type = 'submit';
@@ -314,18 +308,19 @@
                     nextBtn.innerHTML = '<span data-uk>Далі</span><span data-en>Next</span>';
                     nextBtn.type = 'button';
                 }
-                
-                progressFill.style.width = ((step + 1) / steps.length * 100) + '%';
+               
+                const progress = ((step + 1) / steps.length * 100);
+                progressFill.style.width = progress + '%';
+                progressBar.setAttribute('aria-valuenow', progress);
             }
-
             function validateStep(step) {
                 const fields = steps[step].querySelectorAll('[required]');
                 let valid = true;
-                
+               
                 fields.forEach(field => {
                     const error = document.getElementById(field.id + '-error');
-                    const isValid = field.value.trim() !== '';
-                    
+                    const isValid = field.value.trim() !== '' || (field.type === 'checkbox' && field.checked);
+                   
                     if (!isValid) {
                         if (error) error.classList.add('show');
                         field.setAttribute('aria-invalid', 'true');
@@ -337,75 +332,96 @@
                         field.classList.remove('border-red-500');
                     }
                 });
-                
+               
                 return valid;
             }
-
-            async function submitForm(isPartial = false) {
-                const formData = new FormData(form);
-                formData.append(isPartial ? '_partial' : '_full', isPartial ? 'step1' : 'complete');
-
+            async function submitPartialForm() {
+                const formData = new FormData();
+                formData.append('fullName', document.getElementById('fullName').value);
+                formData.append('phone', document.getElementById('phone').value);
+                formData.append('_subject', 'Часткова заявка на вакансію - Крок 1 | Partial Job Application - Step 1');
+                formData.append('submission_id', submissionId);
                 try {
                     const response = await fetch(CONFIG.FORMSPREE_ENDPOINT, {
                         method: 'POST',
                         body: formData,
                         headers: { 'Accept': 'application/json' }
                     });
-
                     if (!response.ok) {
+                        if (response.status === 400) {
+                            throw new Error('Invalid partial form data. Please check your inputs.');
+                        }
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
-
-                    if (isPartial) {
-                        console.log('Partial submit successful');
-                        gtag('event', 'partial_submit', { 'event_category': 'engagement' });
-                    } else {
-                        showSuccessMessage();
-                        gtag('event', 'form_submit', { 'event_category': 'engagement' });
-                    }
+                    console.log('Partial submission successful');
+                    gtag('event', 'partial_form_submit', { 'event_category': 'engagement' });
                 } catch (error) {
-                    console.error('Form submission error:', error);
-                    showErrorMessage();
+                    console.error('Partial form submission error:', error);
+                    showErrorMessage(error.message || 'Partial submission failed. Please try again.');
                 }
             }
-
+            async function submitForm() {
+                const formData = new FormData(form);
+                formData.set('_subject', 'Повна заявка на вакансію | Complete Job Application');
+                formData.append('submission_id', submissionId);
+                try {
+                    const response = await fetch(CONFIG.FORMSPREE_ENDPOINT, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (!response.ok) {
+                        if (response.status === 400) {
+                            throw new Error('Invalid form data. Please check your inputs.');
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    showSuccessMessage();
+                    gtag('event', 'form_submit', { 'event_category': 'engagement' });
+                } catch (error) {
+                    console.error('Form submission error:', error);
+                    showErrorMessage(error.message || 'Submission failed. Please try again.');
+                }
+            }
             function showSuccessMessage() {
                 form.classList.add('hidden');
-                document.getElementById('success-message').classList.add('show');
-                
+                const successMsg = document.getElementById('success-message');
+                successMsg.classList.add('show');
+                successMsg.setAttribute('aria-live', 'polite');
+               
                 setTimeout(() => {
                     form.classList.remove('hidden');
-                    document.getElementById('success-message').classList.remove('show');
+                    successMsg.classList.remove('show');
                     form.reset();
                     localStorage.removeItem('formDraft');
+                    localStorage.removeItem('submissionId');
                     currentStep = 0;
                     showStep(0);
                     updateNextBtnState();
+                    document.getElementById('fullName').focus();
                 }, CONFIG.SUCCESS_TIMEOUT);
             }
-
-            function showErrorMessage() {
+            function showErrorMessage(msg = 'An error occurred. Please try again or contact us directly.') {
                 const errorMsg = document.getElementById('error-message');
+                errorMsg.textContent = msg;
                 errorMsg.style.display = 'block';
+                errorMsg.setAttribute('aria-live', 'polite');
                 setTimeout(() => {
                     errorMsg.style.display = 'none';
                 }, CONFIG.SUCCESS_TIMEOUT);
             }
-
             function validateFullForm() {
                 let isValid = true;
-                
+               
                 // Validate all steps
                 for (let i = 0; i < steps.length; i++) {
                     if (!validateStep(i)) isValid = false;
                 }
-
                 // Additional validations
                 const phoneInput = document.getElementById('phone');
                 const usernameInput = document.getElementById('username');
                 const messengerSelect = document.getElementById('messenger');
-                const resumeInput = document.getElementById('resume');
-
+                const consentInput = document.getElementById('consent');
                 // Phone validation
                 const phoneError = document.getElementById('phone-error');
                 if (!CONFIG.PHONE_REGEX.test(phoneInput.value)) {
@@ -418,7 +434,6 @@
                     phoneInput.setAttribute('aria-invalid', 'false');
                     phoneInput.classList.remove('border-red-500');
                 }
-
                 // Username validation (if messenger selected)
                 const usernameError = document.getElementById('username-error');
                 if (messengerSelect.value && !usernameInput.value.trim()) {
@@ -431,59 +446,53 @@
                     usernameInput.setAttribute('aria-invalid', 'false');
                     usernameInput.classList.remove('border-red-500');
                 }
-
-                // File size validation
-                const resumeError = document.getElementById('resume-error');
-                const resumeFile = resumeInput.files[0];
-                if (resumeFile && resumeFile.size > CONFIG.MAX_FILE_SIZE) {
-                    if (resumeError) resumeError.classList.add('show');
-                    resumeInput.setAttribute('aria-invalid', 'true');
-                    resumeInput.classList.add('border-red-500');
+                // Consent validation
+                if (!consentInput.checked) {
+                    const consentError = document.getElementById('consent-error');
+                    if (consentError) consentError.classList.add('show');
+                    consentInput.setAttribute('aria-invalid', 'true');
+                    consentInput.classList.add('border-red-500');
                     isValid = false;
                 } else {
-                    if (resumeError) resumeError.classList.remove('show');
-                    resumeInput.setAttribute('aria-invalid', 'false');
-                    resumeInput.classList.remove('border-red-500');
+                    const consentError = document.getElementById('consent-error');
+                    if (consentError) consentError.classList.remove('show');
+                    consentInput.setAttribute('aria-invalid', 'false');
+                    consentInput.classList.remove('border-red-500');
                 }
-
                 return isValid;
             }
-
             // Event listeners
             nextBtn.addEventListener('click', async () => {
                 if (validateStep(currentStep)) {
                     if (currentStep === 0) {
-                        await submitForm(true);
-                        currentStep++;
-                        showStep(currentStep);
-                    } else if (currentStep < steps.length - 1) {
+                        await submitPartialForm();
+                    }
+                    if (currentStep < steps.length - 1) {
                         currentStep++;
                         showStep(currentStep);
                     }
                 }
             });
-
             prevBtn.addEventListener('click', () => {
                 if (currentStep > 0) {
                     currentStep--;
                     showStep(currentStep);
                 }
             });
-
+            prevBtn.innerHTML = '<span data-uk>Назад</span><span data-en>Back</span>';
             form.addEventListener('submit', async (event) => {
                 event.preventDefault();
                 if (validateFullForm()) {
-                    await submitForm(false);
+                    await submitForm();
                 } else {
                     const firstErrorField = document.querySelector('form [aria-invalid="true"]');
                     if (firstErrorField) firstErrorField.focus();
                 }
             });
-
             // Real-time validation
             const phoneInput = document.getElementById('phone');
             const fullNameInput = document.getElementById('fullName');
-            
+           
             function updateNextBtnState() {
                 const isFullNameValid = fullNameInput.value.trim();
                 const isPhoneValid = CONFIG.PHONE_REGEX.test(phoneInput.value);
@@ -491,11 +500,9 @@
                 nextBtn.classList.toggle('opacity-50', nextBtn.disabled);
                 nextBtn.classList.toggle('cursor-not-allowed', nextBtn.disabled);
             }
-
             [phoneInput, fullNameInput].forEach(input => {
                 input.addEventListener('input', updateNextBtnState);
             });
-
             phoneInput.addEventListener('blur', () => {
                 const phoneError = document.getElementById('phone-error');
                 if (!CONFIG.PHONE_REGEX.test(phoneInput.value)) {
@@ -509,16 +516,13 @@
                 }
                 updateNextBtnState();
             });
-
             // Messenger field toggle
             const messengerSelect = document.getElementById('messenger');
             const messengerField = document.getElementById('messenger-field');
             const usernameInput = document.getElementById('username');
-
             messengerSelect.addEventListener('change', () => {
                 messengerField.classList.toggle('active', messengerSelect.value);
             });
-
             usernameInput.addEventListener('blur', () => {
                 const usernameError = document.getElementById('username-error');
                 if (messengerSelect.value && !usernameInput.value.trim()) {
@@ -531,14 +535,26 @@
                     usernameInput.classList.remove('border-red-500');
                 }
             });
-
+            // Consent real-time validation
+            const consentInput = document.getElementById('consent');
+            consentInput.addEventListener('change', () => {
+                const consentError = document.getElementById('consent-error');
+                if (!consentInput.checked) {
+                    if (consentError) consentError.classList.add('show');
+                    consentInput.setAttribute('aria-invalid', 'true');
+                    consentInput.classList.add('border-red-500');
+                } else {
+                    if (consentError) consentError.classList.remove('show');
+                    consentInput.setAttribute('aria-invalid', 'false');
+                    consentInput.classList.remove('border-red-500');
+                }
+            });
             // Form draft functionality
             form.addEventListener('input', debounce(() => {
                 const formData = new FormData(form);
                 const dataObj = Object.fromEntries(formData);
                 localStorage.setItem('formDraft', JSON.stringify(dataObj));
             }, 300));
-
             // Load draft on init
             const draft = JSON.parse(localStorage.getItem('formDraft') || '{}');
             Object.keys(draft).forEach(key => {
@@ -550,53 +566,17 @@
                     }
                 }
             });
-
             // Focus management
             fullNameInput.focus();
             showStep(0);
             updateNextBtnState();
         }
-
-        // File upload functionality
-        function initFileUpload() {
-            const resumeLabel = document.querySelector('label[for="resume"]');
-            const resumeFileInput = document.getElementById('resume');
-            
-            const fileButton = document.createElement('button');
-            fileButton.type = 'button';
-            fileButton.className = 'file-button';
-            fileButton.innerHTML = '<span data-uk>Вибрати файл</span><span data-en>Choose File</span>';
-            
-            const fileNameSpan = document.createElement('span');
-            fileNameSpan.className = 'file-name';
-            fileNameSpan.innerHTML = '<span data-uk>Ніякий файл не вибрано</span><span data-en>No file chosen</span>';
-            
-            resumeLabel.appendChild(fileButton);
-            resumeLabel.appendChild(fileNameSpan);
-
-            fileButton.addEventListener('click', () => resumeFileInput.click());
-            
-            resumeFileInput.addEventListener('change', () => {
-                if (resumeFileInput.files.length > 0) {
-                    const fileName = resumeFileInput.files[0].name;
-                    fileNameSpan.textContent = fileName;
-                    fileButton.classList.add('has-file');
-                    fileButton.innerHTML = '<span data-uk>Файл вибрано</span><span data-en>File Selected</span>';
-                } else {
-                    fileNameSpan.innerHTML = '<span data-uk>Ніякий файл не вибрано</span><span data-en>No file chosen</span>';
-                    fileButton.classList.remove('has-file');
-                    fileButton.innerHTML = '<span data-uk>Вибрати файл</span><span data-en>Choose File</span>';
-                }
-            });
-        }
-
         // Accessibility features
         function initAccessibilityFeatures() {
             document.querySelectorAll('input, select, textarea, button').forEach(el => {
                 el.addEventListener('focus', () => el.classList.add('ring-2', 'ring-[var(--gradient-from)]'));
                 el.addEventListener('blur', () => el.classList.remove('ring-2', 'ring-[var(--gradient-from)]'));
             });
-
             // Keyboard navigation for summary elements
             const summary = document.querySelector('details summary');
             if (summary) {
@@ -608,7 +588,6 @@
                 });
             }
         }
-
         // Utility function for debouncing
         function debounce(func, wait) {
             let timeout;
@@ -623,13 +602,9 @@
         }
     </script>
     <!-- Note: For production, minify this HTML using html-minifier.com before uploading to GoDaddy -->
-    <!-- For Formspree: Replace "your-id" with your actual form endpoint -->
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-white" data-lang="ua">
-<noscript>
-<meta http-equiv="refresh" content="0;url=?lang=ua">
-</noscript>
-<a href="#main-content" class="sr-only focus:not-sr-only">Перейти к основному контенту</a>
+<a href="#main-content" class="sr-only focus:not-sr-only">Перейти до основного контенту</a>
 <div class="flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
 <header class="border-b border-black/10 dark:border-white/10">
 <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
@@ -643,9 +618,9 @@
 </div>
 <div class="flex items-center gap-4">
 <div class="flex items-center gap-2 text-sm font-medium">
-<a data-lang="ua" role="button" tabindex="0" class="lang-link lang-active" href="#" aria-label="Українська">UA</a>
+<a data-lang="ua" role="button" tabindex="0" class="lang-link lang-active" href="#" aria-label="Українська" aria-pressed="true">UA</a>
 <span class="text-gray-300 dark:text-gray-600">|</span>
-<a data-lang="en" role="button" tabindex="0" class="lang-link lang-inactive" href="#" aria-label="English">EN</a>
+<a data-lang="en" role="button" tabindex="0" class="lang-link lang-inactive" href="#" aria-label="English" aria-pressed="false">EN</a>
 </div>
 <button onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})" class="rounded-lg bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg">
     <span data-uk>Залишити заявку</span><span data-en>Apply Now</span>
@@ -735,8 +710,8 @@
 </ul>
 </div>
 <div class="grid grid-cols-2 gap-4">
-<img alt="Серверна кімната з рядами серверів, що символізує захист даних" class="rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300" src="server.jpg" srcset="server.webp 1x, server@2x.webp 2x" loading="lazy"/>
-<img alt="Пачки доларів, що символізують фінансовий успіх та високу компенсацію" class="rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 mt-8" src="money.jpg" srcset="money.webp 1x, money@2x.webp 2x" loading="lazy"/>
+<img alt="Серверна кімната з рядами серверів, що символізує захист даних" class="rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300" src="server.jpg" srcset="server.webp 1x, server@2x.webp 2x" loading="lazy" decoding="async"/>
+<img alt="Пачки доларів, що символізують фінансовий успіх та високу компенсацію" class="rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 mt-8" src="money.jpg" srcset="money.webp 1x, money@2x.webp 2x" loading="lazy" decoding="async"/>
 </div>
 </div>
 </div>
@@ -750,10 +725,11 @@
     <span data-en>Send your resume, and we'll contact you to discuss collaboration opportunities.</span>
 </p>
 <div class="mt-8 max-w-md mx-auto">
-<div id="progress-bar">
-<div id="progress-fill" style="width: 50%;"></div>
+<div id="progress-bar" role="progressbar" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100" aria-label="Form progress">
+<div id="progress-fill" style="width: 33%;"></div>
 </div>
-<form action="https://formspree.io/f/xpwyplrq" method="POST" enctype="multipart/form-data" class="space-y-4">
+<form action="https://formspree.io/f/xpwyplrq" method="POST" class="space-y-4"> <!-- Replace hash with your actual Formspree ID -->
+<input type="hidden" name="_subject" value="Заявка на вакансію | Job Application">
 <div id="step1" class="step active">
 <div>
 <label for="fullName" class="block text-sm font-medium text-gray-700 dark:text-gray-300"><span data-uk>ФІО</span><span data-en>Full Name</span> <span class="text-red-500">*</span></label>
@@ -788,10 +764,11 @@
 <textarea id="message" name="message" rows="4" class="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-gray-900 dark:text-white focus:outline-none" placeholder="Розкажіть про себе... / Tell us about yourself..."></textarea>
 </div>
 <div>
-<label for="resume" class="block text-sm font-medium text-gray-700 dark:text-gray-300"><span data-uk>Резюме (PDF/DOC)</span><span data-en>Resume (PDF/DOC)</span></label>
-<input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" aria-describedby="resume-help resume-error" class="sr-only">
-<small id="resume-help" class="text-gray-500 text-xs mt-1 block"><span data-uk>Макс. 5MB, PDF/DOC.</span><span data-en>Max 5MB, PDF/DOC.</span></small>
-<div id="resume-error" class="error-message"><span data-uk>Файл завеликий (макс. 5MB).</span><span data-en>File too large (max 5MB).</span></div>
+<label for="consent" class="flex items-start">
+<input type="checkbox" id="consent" name="consent" required aria-required="true" aria-describedby="consent-error" class="mt-1 h-4 w-4 text-[var(--gradient-from)] focus:ring-[var(--gradient-from)] border-gray-300 rounded">
+<span class="ml-2 text-sm text-gray-600 dark:text-gray-300"><span data-uk>Я згоден з <a href="/privacy-policy.html" class="text-[var(--gradient-from)] hover:underline" target="_blank" rel="noopener noreferrer">політикою конфіденційності</a> та обробкою даних.</span><span data-en>I agree to the <a href="/privacy-policy.html" class="text-[var(--gradient-from)] hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and data processing.</span> <span class="text-red-500">*</span></span>
+</label>
+<div id="consent-error" class="error-message"><span data-uk>Необхідно прийняти умови.</span><span data-en>You must accept the terms.</span></div>
 </div>
 </div>
 <div class="flex justify-center space-x-2">
@@ -799,14 +776,13 @@
 <button type="button" id="next-btn" disabled class="rounded-lg bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] px-4 py-2 text-sm font-bold text-white shadow-md opacity-50 cursor-not-allowed">Далі / Next</button>
 </div>
 </form>
-<div id="success-message" class="success-message" role="alert">
+<div id="success-message" class="success-message" role="alert" aria-live="polite">
     <span data-uk>Дякуємо! Ми зв'яжемося з вами.</span><span data-en>Thank you! We'll contact you soon.</span>
 </div>
-<div id="error-message" class="error-message text-center p-4 bg-red-100 rounded dark:bg-red-900 dark:text-red-100" role="alert" style="display: none;">
-    <span data-uk>Сталася помилка. Спробуйте ще раз або напишіть нам напряму.</span>
-    <span data-en>An error occurred. Please try again or contact us directly.</span>
+<div id="error-message" class="error-message text-center p-4 bg-red-100 rounded dark:bg-red-900 dark:text-red-100" role="alert" aria-live="polite" style="display: none;">
+    <span data-uk>Сталася помилка. Спробуйте ще раз або напишіть нам напряму.</span><span data-en>An error occurred. Please try again or contact us directly.</span>
 </div>
-<p class="mt-4 text-sm text-gray-500 dark:text-gray-400"><span data-uk>Або напишіть: </span><span data-en>Or email: </span><a href="mailto:hr@dataimpact.solutions" class="text-[var(--gradient-from)] hover:underline">hr@dataimpact.solutions</a></p>
+<p class="mt-4 text-sm text-gray-500 dark:text-gray-400"><span data-uk>Або напишіть: </span><span data-en>Or email: </span><a href="mailto:hr@dataimpact.solutions" class="text-[var(--gradient-from)] hover:underline" rel="noopener noreferrer">hr@dataimpact.solutions</a></p>
 </div>
 </div>
 </div>
@@ -826,12 +802,12 @@
 <div class="flex flex-col items-center gap-4 md:flex-row md:gap-6">
 <p class="text-sm text-gray-500 dark:text-gray-400"><span data-uk>© 2025 Data Impact Solutions. Всі права захищені.</span><span data-en>© 2025 Data Impact Solutions. All rights reserved.</span></p>
 <div class="flex gap-4">
-<a href="https://linkedin.com/company/data-impact-solutions" aria-label="LinkedIn" class="text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300">LinkedIn</a>
-<a href="https://x.com/dataimpact_ua" aria-label="X (Twitter)" class="text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300">X</a>
-<a href="https://www.instagram.com/dataimpactsolutions" aria-label="Instagram" class="text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300">Instagram</a>
-<a href="mailto:info@dataimpact.solutions" aria-label="Email" class="text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300">Email</a>
+<a href="https://linkedin.com/company/data-impact-solutions" aria-label="LinkedIn" class="text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300" rel="noopener noreferrer">LinkedIn</a>
+<a href="https://x.com/dataimpact_ua" aria-label="X (Twitter)" class="text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300" rel="noopener noreferrer">X</a>
+<a href="https://www.instagram.com/dataimpactsolutions" aria-label="Instagram" class="text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300" rel="noopener noreferrer">Instagram</a>
+<a href="mailto:info@dataimpact.solutions" aria-label="Email" class="text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300" rel="noopener noreferrer">Email</a>
 </div>
-<a href="/privacy-policy.html" class="text-sm text-gray-500 hover:underline dark:text-gray-400"><span data-uk>Політика конфіденційності</span><span data-en>Privacy Policy</span></a>
+<a href="/privacy-policy.html" class="text-sm text-gray-500 hover:underline dark:text-gray-400" rel="noopener noreferrer"><span data-uk>Політика конфіденційності</span><span data-en>Privacy Policy</span></a>
 </div>
 </div>
 </div>
