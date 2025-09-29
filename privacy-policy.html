@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html class="dark" lang="uk">
+<head>
+<meta charset="UTF-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Політика конфіденційності - Data Impact Solutions</title>
+<meta name="description" content="Політика конфіденційності Data Impact Solutions: як ми обробляємо ваші персональні дані відповідно до GDPR та українського законодавства.">
+<meta name="keywords" content="політика конфіденційності, персональні дані, GDPR, Data Impact Solutions">
+<link rel="canonical" href="https://petrokonnikov-code.github.io/data-impact-site/privacy-policy.html">
+<link rel="alternate" hreflang="uk" href="https://petrokonnikov-code.github.io/data-impact-site/privacy-policy.html">
+<link rel="alternate" hreflang="en" href="https://petrokonnikov-code.github.io/data-impact-site/en/privacy-policy.html">
+<link rel="sitemap" type="application/xml" href="/sitemap.xml">
+<meta name="robots" content="index, follow">
+<!-- Open Graph -->
+<meta property="og:title" content="Політика конфіденційності - Data Impact Solutions">
+<meta property="og:description" content="Дізнайтеся, як ми захищаємо ваші дані.">
+<meta property="og:image" content="https://petrokonnikov-code.github.io/data-impact-site/og-image.jpg">
+<meta property="og:url" content="https://petrokonnikov-code.github.io/data-impact-site/privacy-policy.html">
+<!-- Favicon -->
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<!-- Preload fonts -->
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" as="style">
+<!-- Google Tag Manager (placeholder) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GA-ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'GA-ID');
+</script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+  :root {
+    --gradient-from: #007bff;
+    --gradient-to: #28a745;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  [data-lang="en"] [data-uk], [data-lang="ua"] [data-en] { display: none; }
+  [data-lang="en"] [data-en] { display: block; }
+  [data-lang="ua"] [data-uk] { display: block; }
+  .lang-active {
+    @apply text-[var(--gradient-from)] dark:text-[var(--gradient-from)] font-bold;
+  }
+  .lang-inactive {
+    @apply text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300 dark:hover:text-[var(--gradient-from)];
+  }
+</style>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary: "#1173d4",
+          "background-light": "#f6f7f8",
+          "background-dark": "#101922",
+        },
+        fontFamily: {
+          display: ["Inter"],
+        },
+      },
+    },
+  };
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const langToggle = (lang) => {
+      document.documentElement.lang = lang;
+      document.body.setAttribute('data-lang', lang);
+      localStorage.setItem('lang', lang);
+      document.querySelectorAll('.lang-link').forEach(link => {
+        if (link.getAttribute('data-lang') === lang) {
+          link.classList.remove('lang-inactive');
+          link.classList.add('lang-active');
+        } else {
+          link.classList.remove('lang-active');
+          link.classList.add('lang-inactive');
+        }
+      });
+    };
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLang = urlParams.get('lang');
+    const savedLang = urlLang || localStorage.getItem('lang') || 'ua';
+    langToggle(savedLang);
+    document.querySelectorAll('.lang-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        langToggle(link.getAttribute('data-lang'));
+      });
+    });
+  });
+</script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-white" data-lang="ua">
+<a href="#main-content" class="sr-only focus:not-sr-only">Перейти до основного контенту</a>
+<div class="flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<header class="border-b border-black/10 dark:border-white/10">
+<div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+<div class="flex items-center gap-3">
+<svg aria-hidden="true" class="h-10 w-10 text-[var(--gradient-from)]" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm0 36c-8.84 0-16-7.16-16-16S15.16 8 24 8s16 7.16 16 16-7.16 16-16 16z" fill="currentColor"></path>
+<path d="M24 14c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10zm0 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" fill="currentColor"></path>
+<path d="M24 20c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" fill="currentColor"></path>
+</svg>
+<h2 class="text-xl font-bold"><span data-uk>Data Impact Solutions</span><span data-en>Data Impact Solutions</span></h2>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-sm font-medium">
+<a data-lang="ua" role="button" tabindex="0" class="lang-link lang-active" href="#" aria-label="Українська">UA</a>
+<span class="text-gray-300 dark:text-gray-600">|</span>
+<a data-lang="en" role="button" tabindex="0" class="lang-link lang-inactive" href="#" aria-label="English">EN</a>
+</div>
+<a href="/" class="rounded-lg bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:shadow-lg">
+    <span data-uk>Головна</span><span data-en>Home</span>
+</a>
+</div>
+</div>
+</header>
+<main id="main-content" role="main" class="flex-1">
+<section class="bg-gradient-to-r from-[var(--gradient-from)] to-[var(--gradient-to)] py-20 sm:py-24 md:py-32">
+<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+<div class="text-center text-white">
+<h1 class="text-4xl font-black sm:text-5xl md:text-6xl"><span data-uk>Політика конфіденційності</span><span data-en>Privacy Policy</span></h1>
+<p class="mx-auto mt-6 max-w-2xl text-lg text-gray-200">
+    <span data-uk>Останнє оновлення: 29 вересня 2025 р.</span>
+    <span data-en>Last updated: September 29, 2025</span>
+</p>
+</div>
+</div>
+</section>
+<section class="bg-background-light dark:bg-background-dark py-16 sm:py-20">
+<div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+<div class="prose prose-lg dark:prose-invert max-w-none">
+<h2><span data-uk>Вступ</span><span data-en>Introduction</span></h2>
+<p><span data-uk>Data Impact Solutions (далі — "Компанія", "ми", "нас") поважає вашу приватність і зобов'язується захищати ваші персональні дані. Ця Політика конфіденційності пояснює, як ми збираємо, використовуємо, зберігаємо та захищаємо ваші дані відповідно до Закону України "Про захист персональних даних" та Регламенту GDPR (ЄС) 2016/679. Ми обробляємо дані лише для цілей, пов'язаних з кар'єрою та рекрутингом.</span>
+<span data-en>Data Impact Solutions (hereinafter "Company", "we", "us") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store, and protect your data in accordance with the Law of Ukraine "On Personal Data Protection" and the GDPR (EU) Regulation 2016/679. We process data only for career and recruitment purposes.</span></p>
+
+<h2><span data-uk>Які дані ми збираємо</span><span data-en>What Data We Collect</span></h2>
+<p><span data-uk>Ми збираємо персональні дані, які ви добровільно надаєте через форму на сайті:</span>
+<span data-en>We collect personal data that you voluntarily provide through the site form:</span></p>
+<ul>
+<li><span data-uk>ФІО (Full Name)</span><span data-en>Full Name</span></li>
+<li><span data-uk>Номер телефону (Phone Number)</span><span data-en>Phone Number</span></li>
+<li><span data-uk>Месенджер та нікнейм (Messenger and @handle)</span><span data-en>Messenger and @handle</span></li>
+<li><span data-uk>Повідомлення (Message)</span><span data-en>Message</span></li>
+<li><span data-uk>Резюме (файл PDF/DOC, макс. 5MB)</span><span data-en>Resume (PDF/DOC file, max 5MB)</span></li>
+</ul>
+<p><span data-uk>Автоматично: IP-адреса, тип браузера, мова (для аналітики через Google Analytics). Ми не збираємо чутливі дані (раса, релігія тощо).</span>
+<span data-en>Automatically: IP address, browser type, language (for analytics via Google Analytics). We do not collect sensitive data (race, religion, etc.).</span></p>
+
+<h2><span data-uk>Як ми використовуємо дані</span><span data-en>How We Use Data</span></h2>
+<p><span data-uk>Дані використовуються для:</span>
+<span data-en>Data is used for:</span></p>
+<ul>
+<li><span data-uk>Обробки заявок на вакансії та зв'язку з кандидатами.</span><span data-en>Processing job applications and communicating with candidates.</span></li>
+<li><span data-uk>Аналітики (анонімізовано) для покращення сайту.</span><span data-en>Analytics (anonymized) to improve the site.</span></li>
+<li><span data-uk>Відповіді на запити HR.</span><span data-en>Responding to HR inquiries.</span></li>
+</ul>
+<p><span data-uk>Ми не продаємо дані третім сторонам. Поділ: з постачальниками (Formspree для форм, Google для аналітики) — з договорами DPA.</span>
+<span data-en>We do not sell data to third parties. Sharing: with providers (Formspree for forms, Google for analytics) — under DPA agreements.</span></p>
+
+<h2><span data-uk>Зберігання та захист</span><span data-en>Storage and Protection</span></h2>
+<p><span data-uk>Дані зберігаються на захищених серверах в ЄС/Україні (до 12 місяців для кандидатів, потім видаляються). Захист: шифрування, доступ за ролями, регулярні аудити.</span>
+<span data-en>Data is stored on secure servers in EU/Ukraine (up to 12 months for candidates, then deleted). Protection: encryption, role-based access, regular audits.</span></p>
+
+<h2><span data-uk>Ваші права</span><span data-en>Your Rights</span></h2>
+<p><span data-uk>Ви маєте право (зверніться на hr@dataimpact.solutions):</span>
+<span data-en>You have the right (contact hr@dataimpact.solutions):</span></p>
+<ul>
+<li><span data-uk>Доступ, виправлення, видалення даних.</span><span data-en>Access, rectification, deletion of data.</span></li>
+<li><span data-uk>Обмеження обробки, заперечення, портативність.</span><span data-en>Restriction of processing, objection, portability.</span></li>
+<li><span data-uk>Скарга до Уповноваженого з прав людини в Україні або DPA в ЄС.</span><span data-en>Complaint to the Ukrainian Human Rights Commissioner or EU DPA.</span></li>
+</ul>
+
+<h2><span data-uk>Cookies та трекери</span><span data-en>Cookies and Trackers</span></h2>
+<p><span data-uk>Ми використовуємо cookies для мови (localStorage) та аналітики (Google Analytics). Ви можете відключити в браузері. Файли cookies не містять персональних даних.</span>
+<span data-en>We use cookies for language (localStorage) and analytics (Google Analytics). You can disable in your browser. Cookies do not contain personal data.</span></p>
+
+<h2><span data-uk>Зміни політики</span><span data-en>Changes to Policy</span></h2>
+<p><span data-uk>Ми можемо оновлювати політику; актуальна версія — на сайті. Зміни публікуються з датою.</span>
+<span data-en>We may update the policy; the current version is on the site. Changes are published with the date.</span></p>
+
+<h2><span data-uk>Контакти</span><span data-en>Contact</span></h2>
+<p><span data-uk>Data Impact Solutions, Україна. Email: hr@dataimpact.solutions. DPO: dpo@dataimpact.solutions.</span>
+<span data-en>Data Impact Solutions, Ukraine. Email: hr@dataimpact.solutions. DPO: dpo@dataimpact.solutions.</span></p>
+</div>
+</div>
+</section>
+</main>
+<footer class="border-t border-black/10 dark:border-white/10 bg-background-light dark:bg-background-dark">
+<div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+<div class="flex flex-col items-center justify-between gap-6 md:flex-row">
+<div class="flex items-center gap-3">
+<svg aria-hidden="true" class="h-8 w-8 text-[var(--gradient-from)]" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm0 36c-8.84 0-16-7.16-16-16S15.16 8 24 8s16 7.16 16 16-7.16 16-16 16z" fill="currentColor"></path>
+<path d="M24 14c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10-4.48-10-10-10zm0 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" fill="currentColor"></path>
+<path d="M24 20c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" fill="currentColor"></path>
+</svg>
+<h2 class="text-lg font-bold"><span data-uk>Data Impact Solutions</span><span data-en>Data Impact Solutions</span></h2>
+</div>
+<div class="flex flex-col items-center gap-4 md:flex-row md:gap-6">
+<p class="text-sm text-gray-500 dark:text-gray-400"><span data-uk>© 2025 Data Impact Solutions. Всі права захищені.</span><span data-en>© 2025 Data Impact Solutions. All rights reserved.</span></p>
+<div class="flex gap-4">
+<a href="https://linkedin.com/company/data-impact-solutions" aria-label="LinkedIn" class="text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300">LinkedIn</a>
+<a href="https://x.com/dataimpact_ua" aria-label="X (Twitter)" class="text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300">X</a>
+<a href="https://www.instagram.com/dataimpactsolutions" aria-label="Instagram" class="text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300">Instagram</a>
+<a href="mailto:info@dataimpact.solutions" aria-label="Email" class="text-gray-600 hover:text-[var(--gradient-from)] dark:text-gray-300">Email</a>
+</div>
+</div>
+</div>
+</div>
+</footer>
+</div>
+</body>
+</html>

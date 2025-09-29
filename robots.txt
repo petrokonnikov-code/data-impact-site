@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://petrokonnikov-code.github.io/data-impact-site/sitemap.xml
